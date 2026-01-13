@@ -1,9 +1,16 @@
+<div align="center">
+  <a name="readme-top"></a>
+  <img
+    src="https://raw.githubusercontent.com/firecrawl/firecrawl-mcp-server/main/img/fire.png"
+    height="140"
+  >
+</div>
+
 # Firecrawl MCP Server
 
-A Model Context Protocol (MCP) server implementation that integrates with [Firecrawl](https://github.com/mendableai/firecrawl) for web scraping capabilities.
+A Model Context Protocol (MCP) server implementation that integrates with [Firecrawl](https://github.com/firecrawl/firecrawl) for web scraping capabilities.
 
 > Big thanks to [@vrknetha](https://github.com/vrknetha), [@knacklabs](https://www.knacklabs.ai) for the initial implementation!
-
 
 ## Features
 
@@ -56,7 +63,7 @@ To configure Firecrawl MCP in Cursor **v0.48.6**
      }
    }
    ```
-   
+
 To configure Firecrawl MCP in Cursor **v0.45.6**
 
 1. Open Cursor Settings
@@ -66,8 +73,6 @@ To configure Firecrawl MCP in Cursor **v0.45.6**
    - Name: "firecrawl-mcp" (or your preferred name)
    - Type: "command"
    - Command: `env FIRECRAWL_API_KEY=your-api-key npx -y firecrawl-mcp`
-
-
 
 > If you are using Windows and are running into issues, try `cmd /c "set FIRECRAWL_API_KEY=your-api-key && npx -y firecrawl-mcp"`
 
@@ -93,15 +98,15 @@ Add this to your `./codeium/windsurf/model_config.json`:
 }
 ```
 
-### Running with SSE Local Mode
+### Running with Streamable HTTP Local Mode
 
-To run the server using Server-Sent Events (SSE) locally instead of the default stdio transport:
+To run the server using Streamable HTTP locally instead of the default stdio transport:
 
 ```bash
-env SSE_LOCAL=true FIRECRAWL_API_KEY=fc-YOUR_API_KEY npx -y firecrawl-mcp
+env HTTP_STREAMABLE_SERVER=true FIRECRAWL_API_KEY=fc-YOUR_API_KEY npx -y firecrawl-mcp
 ```
 
-Use the url: http://localhost:3000/sse
+Use the url: http://localhost:3000/mcp
 
 ### Installing via Smithery (Legacy)
 
@@ -311,21 +316,17 @@ Use this guide to select the right tool for your task:
 - **If you want to search the web for info:** use **search**
 - **If you want to extract structured data:** use **extract**
 - **If you want to analyze a whole site or section:** use **crawl** (with limits!)
-- **If you want to do in-depth research:** use **deep_research**
-- **If you want to generate LLMs.txt:** use **generate_llmstxt**
 
 ### Quick Reference Table
 
-| Tool                | Best for                                 | Returns         |
-|---------------------|------------------------------------------|-----------------|
-| scrape              | Single page content                      | markdown/html   |
-| batch_scrape        | Multiple known URLs                      | markdown/html[] |
-| map                 | Discovering URLs on a site               | URL[]           |
-| crawl               | Multi-page extraction (with limits)      | markdown/html[] |
-| search              | Web search for info                      | results[]       |
-| extract             | Structured data from pages               | JSON            |
-| deep_research       | In-depth, multi-source research          | summary, sources|
-| generate_llmstxt    | LLMs.txt for a domain                    | text            |
+| Tool         | Best for                            | Returns         |
+| ------------ | ----------------------------------- | --------------- |
+| scrape       | Single page content                 | markdown/html   |
+| batch_scrape | Multiple known URLs                 | markdown/html[] |
+| map          | Discovering URLs on a site          | URL[]           |
+| crawl        | Multi-page extraction (with limits) | markdown/html[] |
+| search       | Web search for info                 | results[]       |
+| extract      | Structured data from pages          | JSON            |
 
 ## Available Tools
 
@@ -334,20 +335,25 @@ Use this guide to select the right tool for your task:
 Scrape content from a single URL with advanced options.
 
 **Best for:**
+
 - Single page content extraction, when you know exactly which page contains the information.
 
 **Not recommended for:**
+
 - Extracting content from multiple pages (use batch_scrape for known URLs, or map + batch_scrape to discover URLs first, or crawl for full page content)
 - When you're unsure which page contains the information (use search)
 - When you need structured data (use extract)
 
 **Common mistakes:**
+
 - Using scrape for a list of URLs (use batch_scrape instead).
 
 **Prompt Example:**
+
 > "Get the content of the page at https://example.com."
 
 **Usage Example:**
+
 ```json
 {
   "name": "firecrawl_scrape",
@@ -366,6 +372,7 @@ Scrape content from a single URL with advanced options.
 ```
 
 **Returns:**
+
 - Markdown, HTML, or other formats as specified.
 
 ### 2. Batch Scrape Tool (`firecrawl_batch_scrape`)
@@ -373,19 +380,24 @@ Scrape content from a single URL with advanced options.
 Scrape multiple URLs efficiently with built-in rate limiting and parallel processing.
 
 **Best for:**
+
 - Retrieving content from multiple pages, when you know exactly which pages to scrape.
 
 **Not recommended for:**
+
 - Discovering URLs (use map first if you don't know the URLs)
 - Scraping a single page (use scrape)
 
 **Common mistakes:**
+
 - Using batch_scrape with too many URLs at once (may hit rate limits or token overflow)
 
 **Prompt Example:**
+
 > "Get the content of these three blog posts: [url1, url2, url3]."
 
 **Usage Example:**
+
 ```json
 {
   "name": "firecrawl_batch_scrape",
@@ -400,6 +412,7 @@ Scrape multiple URLs efficiently with built-in rate limiting and parallel proces
 ```
 
 **Returns:**
+
 - Response includes operation ID for status checking:
 
 ```json
@@ -432,20 +445,25 @@ Check the status of a batch operation.
 Map a website to discover all indexed URLs on the site.
 
 **Best for:**
+
 - Discovering URLs on a website before deciding what to scrape
 - Finding specific sections of a website
 
 **Not recommended for:**
+
 - When you already know which specific URL you need (use scrape or batch_scrape)
 - When you need the content of the pages (use scrape after mapping)
 
 **Common mistakes:**
+
 - Using crawl to discover URLs instead of map
 
 **Prompt Example:**
+
 > "List all URLs on example.com."
 
 **Usage Example:**
+
 ```json
 {
   "name": "firecrawl_map",
@@ -456,6 +474,7 @@ Map a website to discover all indexed URLs on the site.
 ```
 
 **Returns:**
+
 - Array of URLs found on the site
 
 ### 5. Search Tool (`firecrawl_search`)
@@ -463,17 +482,21 @@ Map a website to discover all indexed URLs on the site.
 Search the web and optionally extract content from search results.
 
 **Best for:**
+
 - Finding specific information across multiple websites, when you don't know which website has the information.
 - When you need the most relevant content for a query
 
 **Not recommended for:**
+
 - When you already know which website to scrape (use scrape)
 - When you need comprehensive coverage of a single website (use map or crawl)
 
 **Common mistakes:**
+
 - Using crawl or map for open-ended questions (use search instead)
 
 **Usage Example:**
+
 ```json
 {
   "name": "firecrawl_search",
@@ -491,9 +514,11 @@ Search the web and optionally extract content from search results.
 ```
 
 **Returns:**
+
 - Array of search results (with optional scraped content)
 
 **Prompt Example:**
+
 > "Find the latest research papers on AI published in 2023."
 
 ### 6. Crawl Tool (`firecrawl_crawl`)
@@ -501,9 +526,11 @@ Search the web and optionally extract content from search results.
 Starts an asynchronous crawl job on a website and extract content from all pages.
 
 **Best for:**
+
 - Extracting content from multiple related pages, when you need comprehensive coverage.
 
 **Not recommended for:**
+
 - Extracting content from a single page (use scrape)
 - When token limits are a concern (use map + batch_scrape)
 - When you need fast results (crawling can be slow)
@@ -511,13 +538,16 @@ Starts an asynchronous crawl job on a website and extract content from all pages
 **Warning:** Crawl responses can be very large and may exceed token limits. Limit the crawl depth and number of pages, or use map + batch_scrape for better control.
 
 **Common mistakes:**
+
 - Setting limit or maxDepth too high (causes token overflow)
 - Using crawl for a single page (use scrape instead)
 
 **Prompt Example:**
+
 > "Get all blog posts from the first two levels of example.com/blog."
 
 **Usage Example:**
+
 ```json
 {
   "name": "firecrawl_crawl",
@@ -532,6 +562,7 @@ Starts an asynchronous crawl job on a website and extract content from all pages
 ```
 
 **Returns:**
+
 - Response includes operation ID for status checking:
 
 ```json
@@ -560,20 +591,24 @@ Check the status of a crawl job.
 ```
 
 **Returns:**
+
 - Response includes the status of the crawl job:
-  
+
 ### 8. Extract Tool (`firecrawl_extract`)
 
 Extract structured information from web pages using LLM capabilities. Supports both cloud AI and self-hosted LLM extraction.
 
 **Best for:**
+
 - Extracting specific structured data like prices, names, details.
 
 **Not recommended for:**
+
 - When you need the full content of a page (use scrape)
 - When you're not looking for specific structured data
 
 **Arguments:**
+
 - `urls`: Array of URLs to extract information from
 - `prompt`: Custom prompt for the LLM extraction
 - `systemPrompt`: System prompt to guide the LLM
@@ -584,9 +619,11 @@ Extract structured information from web pages using LLM capabilities. Supports b
 
 When using a self-hosted instance, the extraction will use your configured LLM. For cloud API, it uses Firecrawl's managed LLM service.
 **Prompt Example:**
+
 > "Extract the product name, price, and description from these product pages."
 
 **Usage Example:**
+
 ```json
 {
   "name": "firecrawl_extract",
@@ -611,6 +648,7 @@ When using a self-hosted instance, the extraction will use your configured LLM. 
 ```
 
 **Returns:**
+
 - Extracted structured data as defined by your schema
 
 ```json
@@ -628,78 +666,6 @@ When using a self-hosted instance, the extraction will use your configured LLM. 
   "isError": false
 }
 ```
-
-### 9. Deep Research Tool (`firecrawl_deep_research`)
-
-Conduct deep web research on a query using intelligent crawling, search, and LLM analysis.
-
-**Best for:**
-- Complex research questions requiring multiple sources, in-depth analysis.
-
-**Not recommended for:**
-- Simple questions that can be answered with a single search
-- When you need very specific information from a known page (use scrape)
-- When you need results quickly (deep research can take time)
-
-**Arguments:**
-- query (string, required): The research question or topic to explore.
-- maxDepth (number, optional): Maximum recursive depth for crawling/search (default: 3).
-- timeLimit (number, optional): Time limit in seconds for the research session (default: 120).
-- maxUrls (number, optional): Maximum number of URLs to analyze (default: 50).
-
-**Prompt Example:**
-> "Research the environmental impact of electric vehicles versus gasoline vehicles."
-
-**Usage Example:**
-```json
-{
-  "name": "firecrawl_deep_research",
-  "arguments": {
-    "query": "What are the environmental impacts of electric vehicles compared to gasoline vehicles?",
-    "maxDepth": 3,
-    "timeLimit": 120,
-    "maxUrls": 50
-  }
-}
-```
-
-**Returns:**
-- Final analysis generated by an LLM based on research. (data.finalAnalysis)
-- May also include structured activities and sources used in the research process.
-
-### 10. Generate LLMs.txt Tool (`firecrawl_generate_llmstxt`)
-
-Generate a standardized llms.txt (and optionally llms-full.txt) file for a given domain. This file defines how large language models should interact 
-with the site.
-
-**Best for:**
-- Creating machine-readable permission guidelines for AI models.
-
-**Not recommended for:**
-- General content extraction or research
-
-**Arguments:**
-- url (string, required): The base URL of the website to analyze.
-- maxUrls (number, optional): Max number of URLs to include (default: 10).
-- showFullText (boolean, optional): Whether to include llms-full.txt contents in the response.
-
-**Prompt Example:**
-> "Generate an LLMs.txt file for example.com."
-
-**Usage Example:**
-```json
-{
-  "name": "firecrawl_generate_llmstxt",
-  "arguments": {
-    "url": "https://example.com",
-    "maxUrls": 20,
-    "showFullText": true
-  }
-}
-```
-
-**Returns:**
-- LLMs.txt file contents (and optionally llms-full.txt)
 
 ## Logging System
 
